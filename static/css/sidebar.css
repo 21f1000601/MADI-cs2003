@@ -1,0 +1,130 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.sidebar {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    width: 240px;
+    transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 60px;
+}
+
+.sidebar .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    text-decoration: none;
+    color: #000;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+}
+
+.sidebar .menu-item:hover {
+    background-color: #73ace4;
+}
+
+.sidebar .menu-item img {
+    width: 24px;
+    margin-right: 10px;
+}
+
+.sidebar .menu-item span {
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .menu-item span {
+    opacity: 0;
+}
+
+.sidebar .toggle-btn {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+    background-color: #e9ecef;
+    border: none;
+    width: 100%;
+}
+
+.sidebar .toggle-btn img {
+    width: 24px;
+    margin-right: 10px;
+}
+
+.sidebar .toggle-btn span {
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar.collapsed .toggle-btn span {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.td :hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+
+
+/* Remove the spinner controls in most browsers */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove the spinner controls in Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+  
+
+.alert {
+padding: 0.5rem 1rem; /* Reduce padding inside the alert */
+margin: 0.5rem 0; /* Adjust margin for vertical spacing */
+}
+.alert p {
+margin-bottom: 1; /* Remove extra margin from the paragraph inside */
+}
+
+
+.star-rating {
+    display: inline-flex; /* Align stars in a row */
+    gap: 0.5rem; /* Add space between stars */
+}
+
+.star-rating .fa-star {
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease; /* Smooth transition for color and scale */
+    color: gold; /* Default color for unselected stars */
+}
+
+.star-rating .fa-star:hover,
+.star-rating .fa-star.selected {
+    color: gold; /* Gold color for selected and hovered stars */
+    transform: scale(1.2); /* Slightly enlarge the star on hover or when selected */
+}
+
+.star-rating .fa-star:hover ~ .fa-star {
+    color: gold; /* Reset color for stars after the hovered one */
+}
+
+/* Add responsiveness for smaller screens */
+@media (max-width: 576px) {
+    .star-rating .fa-star {
+        font-size: 1.5rem; /* Reduce size on small screens */
+    }
+}
