@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0-alpha1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+</head>
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <button class="toggle-btn" onclick="toggleSidebar()">
+            <img src="https://img.icons8.com/ios-filled/50/000000/menu.png" alt="Toggle">
+            <span>Menu</span>
+        </button>
+        <a href="/customer/dashboard?id={{cust.customer_id}}" class="menu-item" title="Dashboard">
+            <img src="https://img.icons8.com/ios-filled/50/000000/home.png" alt="Dashboard">
+            <span>Dashboard</span>
+        </a>
+        <a href="/customer/my_requests?id={{cust.customer_id}}" class="menu-item" title="My Requests">
+            <img src="https://img.icons8.com/ios-filled/50/000000/order-history.png" alt="My Requests">
+            <span>My Requests</span>
+        </a>
+        <a href="/customer/profile?id={{cust.customer_id}}" class="menu-item" title="Profile">
+            <img src="https://img.icons8.com/ios-filled/50/000000/user.png" alt="Profile">
+            <span>Profile</span>
+        </a>
+        <a href="/login" class="menu-item" title="Logout">
+            <img src="https://img.icons8.com/ios-filled/50/000000/logout-rounded.png" alt="Logout">
+            <span>Logout</span>
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <header class="container-fluid py-4 bg-info text-white shadow-sm">
+            <div class="row align-items-center">
+                <!-- Welcome Message -->
+                <div class="col-md-6 text-start">
+                    <h1 class="h2 mb-0">Welcome, <strong> {{cust.fullname}}</strong></h1>
+                    <p class="mb-0 small">Your dashboard at a glance</p>
+                </div>
+                <!-- Search Bar -->
+                
+            </div>
+        </header>
+       
+
+        {% if cust.status == 1 %}
+
+        <!-- Book Services Section -->
+        {% if request.args.get('success')=='1' %}
+        <div class="alert alert-success mt-4 d-flex justify-content-between align-items-center" role="alert" style="padding: 0.5rem 1rem; margin: 0.5rem 0;">
+            <p class="mb-0"><strong>Success!</strong> Your booking has been confirmed. We will notify you shortly with more details</p>
+            <button type="button" class="btn-close btn-close-black" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          
+        
+        {% elif success=='0' %}
+        <div class="alert alert-danger mt-4" role="alert">
+            <strong>Error!</strong> 'Your booking has been failed. Please try again later'
+        </div>
+        {% endif %}
+
+
+
+        {% for service in services %}
+        {% for prof in profs.query.filter_by(service_type=service.service_type, verification='Verified').all() %}
+        {% if prof %}
+            <tr>
+                <td>{{ service.name }}</td>
+                <td>{{ service.description }}</td>
+                <td>{{ service.price }}</td>
+                <td>{{ service.time_required }}</td>
+                <td>
+                    <form action="/customer_dashboard/request_services" method="POST">
+                        <input type="hidden" name="service_id" value="{{ service.id }}">
+                        <input type="hidden" name="customer_id" value="{{ customer.id }}">
+                        <button type="submit" class="request-btn">Request Service</button>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        {% endfor %}
+
+
+
+        <div class="mt-4">
+            <div class="card shadow-lg">
+                <div class="card-header text-center bg-primary text-white">
+                    <h3 class="mb-0">Book a Service</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-1 row-cols-md-4 g-4">
+        
+                        {% for serv in servs %}
+                        {% set professionals = p.query.filter_by(service_type=serv.service_category, profile_status='1').all() %}
+                        {% if professionals %} <!-- Check if at least one professional is available -->
+        
+                        <div class="col">
+                            <div class="card d-flex flex-column h-100">
+                                <img src="{{ url_for('static', filename='images/' + serv.service_name + '.jpg') }}" 
+                                     class="card-img-top img-fluid" 
+                                     alt="{{ serv.service_name }}" 
+                                     style="height: 250px; object-fit: cover;">
+                                <div class="card-body">
+                                    <h3 class="card-title">{{ serv.service_name }}</h3>
+                                    <h6 class="card-title">{{ serv.Category_name }}</h6>
+                                    <p class="card-text">{{ serv.description }}</p>
+                                    <p><strong>Time required: </strong>{{ serv.time_required }} hours</p>
+                                    <h5><strong>Price: </strong>Rs. {{ serv.base_price }}</h5>
+                                    
+                                    <!-- Form to submit service details -->
+                                    <form action="/customer/book_service" method="POST">
+                                        <!-- Hidden inputs to send service details -->
+                                        <input type="hidden" name="service_id" value="{{ serv.service_id }}">
+                                        <input type="hidden" name="price" value="{{ serv.base_price }}">
+                                        <input type="hidden" name="service_category" value="{{ serv.service_category }}">
+                                        <input type="hidden" name="email" value="{{ cust.email }}">
+        
+                                        <!-- Submit Button -->
+                                        <button type="submit" class="btn btn-primary mt-auto">
+                                            Book Now
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+        
+                        {% endif %}
+                        {% endfor %}
+        
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">Explore and book top-quality services at your convenience!</p>
+                </div>
+            </div>
+        </div>
+        
+
+
+
+
+        
+
+
+        <!-- Service Requests -->
+        <div class="card shadow-lg mt-4 padding-4px">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Open Service Requests</h5>
+                <form class="d-flex" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Search Requests" aria-label="Search">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+            </div>
+            <div class="card-body">
+                {% if reqs %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col-1">Request ID</th>
+                            <th scope="col-2">Service</th>
+                            <th scope="col">Date Requested</th>
+                            <th scope="col">Professional</th>
+                            <th scope="col">Contact Info</th>
+                            <th scope="col">Status</th>
+                            <th class="text-center" scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in reqs %}
+                        <tr>
+                            <td>{{req.request_id}}</td>
+                            <td>{{s.query.filter_by(service_id=req.service_id).first().service_name}}</td>
+                            <td>{{req.date_of_request.date()}}</td>
+
+                            {% if req.professional_id == None %}
+                            <td style="color: orange;">Not assigned</td>
+                            <td style="color: orange;">NA</td>
+
+                            {{p.query.filter_by(professional_id=req.professional_id).first().fullname}}
+                            {% else %}
+                                <td style="color: lightseagreen;">{{p.query.filter_by(professional_id=req.professional_id).first().fullname}}
+                                <td style="color: lightseagreen;">{{p.query.filter_by(professional_id=req.professional_id).first().phone_number}}</td>
+
+                            {% endif %}
+
+                            {% if req.service_status == '0' %}
+                                <td style="color: orange;">Requested</td>
+
+                                <td class="text-center">
+                                    <button class="btn btn-outline-danger btn-sm" onclick="cancelRequest('{{ req.request_id }}', '{{cust.professional_id}}')">Cancel</button>
+                                </td>
+                            {% elif req.service_status == '1' %}
+                                <td style="color: blue;">In-Process</td>
+
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="completeRequest('{{ req.request_id }}', '{{cust.professional_id}}')" >Complete </button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="cancelRequest('{{ req.request_id }}', '{{cust.professional_id}}')">Cancel</button>
+                                </td>
+                            {% elif req.service_status == '9' %}
+                                <td style="color: green;">Completed</td>
+
+                                {% if req.remarks == None %}
+
+                                <td class="text-center">
+                                    <button class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#review{{req.request_id}}">Review</button>
+                                </td>
+
+                                {% else %}
+                                <td class="text-center"><button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewreview{{ req.request_id }}">
+                                    <i class="fas fa-eye"></i> Review
+                                    </button>
+
+                                   
+                                </td>
+                                {% endif %}
+                                    
+                            {% elif req.service_status == '-1' %}
+                                <td style="color: red;">Cancelled </td>
+           
+                                <td class="text-center">
+                                    <button class="btn btn-outline-secondary btn-sm" disabled>Remarks</button>
+                                </td>
+                            {% endif %}
+                            
+                        </tr>
+
+
+                        <!-- Review Modal -->
+                        <div class="modal fade" id="review{{ req.request_id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Rate the Service #{{req.request_id}}:</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="card shadow-sm">
+                                        <div class="card-body">
+
+                                            {% if req.service_status=='9' and req.rating==None %}
+                                            <h3 class="card-title">{{s.query.filter_by(service_id=req.service_id).first().service_name}}</h3>
+                                            <h6 class="card-title">{{s.query.filter_by(service_id=req.service_id).first().category_name}}</h6>
+                                            <p><strong>Time required: </strong>{{s.query.filter_by(service_id=req.service_id).first().time_required}} hours</p>
+                                            <h5><strong>Price: </strong>Rs. {{s.query.filter_by(service_id=req.service_id).first().base_price}}</h5>
+                                            <p style="color: green;"><strong style="color: black;">Date of request: </strong> {{req.date_of_request.date()}}</p>
+                                            <p style="color: green;"><strong style="color: black;">Date of Completion: </strong>{{req.date_of_completion.date()}}</p>
+                                            <p style="color: darkblue;"><strong style="color: black;">Professional Name: </strong> {{p.query.filter_by(professional_id=req.professional_id).first().fullname}}</p>
+                                            <p style="color: darkblue;"><strong style="color: black;">Professional Contact Number: </strong> {{p.query.filter_by(professional_id=req.professional_id).first().phone_number}}</p>
+                
+                                           
+                                            <form action="/update_request" method="POST">
+                                                <div class="star-rating mb-3" id="rating-{{ req.request_id }}">
+                                                    <input type="hidden" name="rating" id="rating-input-{{ req.request_id }}" required>
+                                                    <i class="far fa-star fa-2x" data-value="1" data-id="{{ req.request_id }}"></i>
+                                                    <i class="far fa-star fa-2x" data-value="2" data-id="{{ req.request_id }}"></i>
+                                                    <i class="far fa-star fa-2x" data-value="3" data-id="{{ req.request_id }}"></i>
+                                                    <i class="far fa-star fa-2x" data-value="4" data-id="{{ req.request_id }}"></i>
+                                                    <i class="far fa-star fa-2x" data-value="5" data-id="{{ req.request_id }}"></i>
+                                                </div>
+                                                <input type="hidden" name="req_id"  value = "{{req.request_id}}" >
+                                                <input type="hidden" name="customer_id"  value = "{{cust.customer_id}}" >
+                                                <div class="mb-3">
+                                                    <textarea class="form-control" name="feedback" rows="3" placeholder="Write your feedback..." required></textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            </form>
+
+
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+                        <!-- View review -->
+                        <div class="modal fade" id="viewreview{{ req.request_id }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-white text-black">
+                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Submitted Feedback</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="card shadow-sm border-0">
+                                        <div class="card-body">
+                                            {% if req.service_status == '9' %}
+                                            <h3 class="card-title" style="color: darkslateblue;">{{ s.query.filter_by(service_id=req.service_id).first().service_name }}</h3>
+                                            <h6 class="card-subtitle mb-3 text-muted">{{ s.query.filter_by(service_id=req.service_id).first().service_category }}</h6>
+                                            <p><strong>Time required:</strong> {{ s.query.filter_by(service_id=req.service_id).first().time_required }} hours</p>
+                                            <h5><strong>Price:</strong> Rs. {{ s.query.filter_by(service_id=req.service_id).first().base_price }}</h5>
+                                            <p class="text-success"><strong>Date of Request:</strong> {{ req.date_of_request.date() }}</p>
+                                            <p class="text-success"><strong>Date of Completion:</strong> {{ req.date_of_completion.date() }}</p>
+                                            <p class="text-primary"><strong>Professional Name:</strong> {{ p.query.filter_by(professional_id=req.professional_id).first().fullname }}</p>
+                                            <p class="text-primary"><strong>Professional Contact:</strong> {{ p.query.filter_by(professional_id=req.professional_id).first().phone_number }}</p>
+                                            {% endif %}
+                        
+                                            <hr class="my-4">
+                        
+                                            <!-- Rating Section -->
+                                            <div class="mb-3">
+                                                <p class="h5 text-dark">Rating Given:</p>
+                                                <div class="star-rating mb-3 view-only" id="rating-{{ req.request_id }}">
+                                                    <input type="hidden" value="{{ req.rating }}" name="rating" id="rating-input-{{ req.request_id }}" required>
+                                                    <i class="far fa-star fa-2x" data-value="1" data-id="{{ req.request_id }}"></i>
+                                                    <i class="far fa-star fa-2x" data-value="2" data-id="{{ req.request_id }}"></i>
+                                                    <i class="far fa-star fa-2x" data-value="3" data-id="{{ req.request_id }}"></i>
+                                                    <i class="far fa-star fa-2x" data-value="4" data-id="{{ req.request_id }}"></i>
+                                                    <i class="far fa-star fa-2x" data-value="5" data-id="{{ req.request_id }}"></i>
+                                                </div>
+                                            </div>
+                        
+                                            <!-- Feedback Section -->
+                                            <div class="mb-3">
+                                                <p class="h5 text-dark">Feedback Given:</p>
+                                                <p>{{ req.remarks }}</p>
+                                            </div>
+                        
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+
+                    
+
+                        {% endfor %}
+                       
+                        
+
+                        
+
+                        
+                          
+                    </tbody>
+                </table>
+                {% else %}
+                <tr><h5>No service requests to show</h5></tr>
+                {% endif %}
+            </div>
+        </div>
+
+
+
+
+
+        {% elif cust.status == 0 %}
+        <div class="text-center">
+            <h1 style="color: red;">Unfortunately, your profile is BLOCKED. </h1>
+            <h3 style="color: magenta;">If you think this is a mistake, please contact admin. </h3>
+        </div>
+
+        {%endif%}
+    </div>
+
+
+
+   
+    
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dash_cust.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0-alpha1/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
